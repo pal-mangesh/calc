@@ -16,7 +16,7 @@ interface Buttoninputdigit {
 
 function App() {
   const digits = [9, 8, 7, 6, 5, 4, 3, 2, 1, 0]
-  const Actions = ["=", "+", "-", "x"]
+  const actions = ["=", "+", "-", "x"]
   const inputItem = []
   const [displayVal, setDisplayVal] = React.useState("")
   const [actionval, setActionVal] = React.useState("")
@@ -31,30 +31,57 @@ function App() {
 
   const actionOnClick = (index: number) => {
     return () => {
-      let arr = [];
+
       if (displayVal && displayVal.length) {
-        let temp1 = displayVal;
-        let result = temp1;
-        //let arr = [];
-        arr.push(displayVal)
-        
-        result = temp1 + "" + Actions[index]
-        setDisplayVal(result)
-        if((arr && arr.length)&&(arr[arr.length-1]==="+" ||arr[arr.length-1]==="-"||arr[arr.length-1]==="x"||arr[arr.length-1]==="/")) {
-          
+        const lastChar = displayVal[displayVal.length - 1];
+        if (lastChar !== "+" && lastChar !== "-" && lastChar !== "x" && lastChar !== "/" && lastChar !== "=") {
+          setDisplayVal(displayVal + actions[index])
         }
-        
-      }
-      else {
-        let temp = Actions[index];
-        setDisplayVal(temp)
-      }
 
+        if (actions[index] === "=") {
+          let total = 0;
+          let elements = [];
+          let partial = "";
+          
+          const dvArr = displayVal.split("");
+          for (let i = 0; i < dvArr.length; i++) {
+            let c = displayVal[i]
+            if (c.match(/[0-9]/)) {
+              partial += c;
+              if (i === dvArr.length - 1) {
+                elements.push(partial);
+              }
+            } else {
+              elements.push(partial);
+              elements.push(c);
+              partial = ""
+            }
+          }
+          if (elements && elements.length) {
+            total = elements[0].length?parseInt(elements[0]):0
+            for (let i = 1; i < elements.length; i += 2) {
+              if (elements[i]) {
+                const ele = elements[i]
+                if (ele === "+") {
+                  total += parseInt(elements[i + 1])
+                }
+                if (ele === "-") {
+                  total -= parseInt(elements[i + 1])
+                }
+                if (ele === "x") {
+                  total *= parseInt(elements[i + 1])
+                }
+                if (ele === "/") {
+                  total /= parseInt(elements[i + 1])
+                }
+              } else { break; }
+            }
+            setDisplayVal(total + "")
+          }
+        }
+      }
     }
-
   }
-
-
 
   return (
     <div>
@@ -72,7 +99,7 @@ function App() {
       </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", flexDirection: "row-reverse" }}>
-        {Actions.map((e: string, index: number) => {
+        {actions.map((e: string, index: number) => {
           return <Button onClick={actionOnClick(index)} customStyle={{ width: "33%" }}>{e}</Button>
         })}
       </div>
